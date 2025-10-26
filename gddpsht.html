@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TP.HCM - Kinh tế - Khí hậu</title>
+  <style>
+    :root {
+      --accent: #0078ff;
+      --accent-light: #cce4ff;
+      --bg: #f2f7fb;
+      --card: #fff;
+    }
+    * { box-sizing: border-box; transition: all .4s ease; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      margin: 0; background: var(--bg); color: #0b2233;
+      overflow-x: hidden;
+    }
+    header {
+      background: linear-gradient(135deg, var(--accent), #00b7ff);
+      color: white; padding: 60px 20px; text-align: center;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    }
+    h1 {
+      margin: 0; font-size: 48px;
+      animation: fadeInText 2s ease-in-out forwards, glow 2s infinite alternate;
+    }
+
+    @keyframes fadeInText {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes glow {
+      from { text-shadow: 0 0 10px #80d8ff, 0 0 20px #00b7ff; }
+      to { text-shadow: 0 0 25px #cce4ff, 0 0 40px #0078ff; }
+    }
+
+    main { display: flex; justify-content: center; align-items: center; height: calc(100vh - 160px); }
+    .card {
+      background: var(--card); padding: 40px; border-radius: 18px;
+      box-shadow: 0 6px 25px rgba(0,0,0,0.08);
+      max-width: 800px; width: 90%; text-align: left;
+      opacity: 0; transform: scale(0.98);
+    }
+    .fade-in { animation: fadeIn .6s forwards; }
+    .fade-out { animation: fadeOut .4s forwards; }
+    .shake { animation: shake 0.4s ease; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeOut {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(-20px); }
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); color: #ff9f0a; }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes glowText {
+      0%, 100% { text-shadow: 0 0 10px #ffd700, 0 0 20px #ffec8b; }
+      50% { text-shadow: 0 0 25px #fff176, 0 0 40px #fff59d; }
+    }
+
+    .options { list-style: none; padding: 0; margin: 20px 0; }
+    .options li { margin-bottom: 14px; }
+    label.option {
+      display: block; padding: 18px; border-radius: 12px;
+      border: 1px solid #dde9f3; background: #fafcff; cursor: pointer;
+      font-size: 20px;
+    }
+    label.option:hover { background: var(--accent-light); }
+    input[type=radio] { margin-right: 12px; transform: scale(1.3); }
+
+    .btn {
+      padding: 14px 22px; border-radius: 12px; border: none;
+      background: var(--accent); color: #fff; font-weight: 600; cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,120,255,0.3);
+      font-size: 20px;
+    }
+    .btn:hover { background: #0063cc; }
+
+    .score { font-size: 22px; font-weight: bold; margin-top: 20px; text-align: center; }
+    .streak { font-size: 20px; text-align: right; color: #0078ff; font-weight: 600; margin-bottom: 14px; }
+    .streak.animate { animation: pulse 0.6s ease; }
+    .correct { background: #e6ffef; border-color: #8cd6a6; }
+    .wrong { background: #ffe8e8; border-color: #f3b1b1; }
+
+    #music-toggle {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 36px; /* Kích thước biểu tượng */
+      cursor: pointer;
+      color: #fff; /* Màu biểu tượng */
+      text-shadow: 0 2px 5px rgba(0,0,0,0.3); /* Tạo hiệu ứng đổ bóng cho biểu tượng */
+      z-index: 1000; /* Đảm bảo biểu tượng nằm trên cùng */
+    }
+    #music-toggle:hover {
+      transform: scale(1.1);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>TP.HCM - Kinh tế - Khí hậu</h1>
+  </header>
+
+  <main>
+    <div class="card fade-in" id="quiz-container">
+      <div class="streak" id="streak-display">🔥 Chuỗi đúng: 0</div>
+      <h2 id="question-text" style="font-size:26px;"></h2>
+      <ul class="options" id="options-list"></ul>
+      <button class="btn" id="next-btn" style="display:none;">Câu tiếp theo ➜</button>
+      <div id="result" class="score"></div>
+    </div>
+  </main>
+
+  <div id="music-toggle">🔊</div> <audio id="background-music" src="soft-piano-music-312509.mp3" loop></audio>
+  <audio id="correct-sound" src="training-program-correct1-105916.mp3"></audio>
+  <audio id="wrong-sound" src="error-04-199275.mp3"></audio>
+  <audio id="finish-sound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_9f6c5686b9.mp3"></audio>
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <script>
+    const QUESTIONS = [
+      {q:"Nguyên nhân nào sau đây không thuộc biến động kinh tế toàn cầu ảnh hưởng đến TP.HCM?", opts:["Chiến tranh thương mại Mỹ–Trung","Suy thoái kinh tế thế giới","Mưa lớn, ngập úng kéo dài"], a:2},
+      {q:"Đại dịch COVID-19 gây ra tác động lớn nhất nào đối với nền kinh tế TP.HCM?", opts:["Gián đoạn chuỗi cung ứng và du lịch","Tăng dân số thành phố","Giảm mức độ hội nhập quốc tế"], a:0},
+      {q:"Cuộc Cách mạng công nghiệp 4.0 khiến TP.HCM phải đối mặt với thách thức gì?", opts:["Thiếu nguồn tài nguyên thiên nhiên","Áp lực thích ứng công nghệ và chuyển đổi số","Giảm dân số lao động"], a:1},
+      {q:"Tốc độ đô thị hóa nhanh gây ra hệ quả nào sau đây?", opts:["Dân số giảm mạnh","Áp lực lên giao thông, y tế và nhà ở","Tăng tỷ lệ rừng tự nhiên"], a:1},
+      {q:"Biến đổi khí hậu và ngập lụt ảnh hưởng đến kinh tế TP.HCM như thế nào?", opts:["Làm tăng năng suất lao động","Giảm chi phí vận chuyển hàng hóa","Làm hư hỏng hạ tầng, gián đoạn sản xuất"], a:2},
+      {q:"Về tác động xã hội, điều gì không phải là hậu quả của thiên tai – biến đổi khí hậu tại TP.HCM?", opts:["Gia tăng dịch bệnh","Di cư khỏi vùng ngập","Mở rộng rừng ngập mặn tự nhiên trong đô thị"], a:2}
+    ];
+
+    let current = 0;
+    let score = 0;
+    let streak = 0;
+    let maxStreak = 0;
+    let musicInitialized = false; 
+    let isMusicPlaying = false; // Theo dõi trạng thái nhạc nền
+
+    const container = document.getElementById('quiz-container');
+    const questionText = document.getElementById('question-text');
+    const optionsList = document.getElementById('options-list');
+    const resultDiv = document.getElementById('result');
+    const nextBtn = document.getElementById('next-btn');
+    const streakDisplay = document.getElementById('streak-display');
+    const soundCorrect = document.getElementById('correct-sound');
+    const soundWrong = document.getElementById('wrong-sound');
+    const soundFinish = document.getElementById('finish-sound');
+    const backgroundMusic = document.getElementById('background-music');
+    const musicToggleBtn = document.getElementById('music-toggle'); // Lấy biểu tượng loa
+
+    // Cập nhật trạng thái biểu tượng loa
+    function updateMusicToggleButton() {
+        musicToggleBtn.textContent = isMusicPlaying ? '🔊' : '🔇';
+    }
+
+    // Hàm đảm bảo nhạc nền bắt đầu phát sau tương tác đầu tiên
+    function initializeMusic() {
+        if (!musicInitialized) {
+            backgroundMusic.volume = 0.3; // Giảm âm lượng nhạc nền
+            backgroundMusic.play().then(() => {
+                isMusicPlaying = true;
+                updateMusicToggleButton();
+            }).catch(e => {
+                console.log("Autoplay blocked. Music will play after the first interaction.");
+                isMusicPlaying = false; // Đảm bảo cờ được đặt đúng nếu không phát được
+                updateMusicToggleButton();
+            });
+            musicInitialized = true;
+        }
+    }
+
+    // Xử lý sự kiện click vào biểu tượng loa
+    musicToggleBtn.addEventListener('click', () => {
+        if (isMusicPlaying) {
+            backgroundMusic.pause();
+            isMusicPlaying = false;
+        } else {
+            backgroundMusic.play().then(() => {
+                isMusicPlaying = true;
+            }).catch(e => {
+                console.log("Failed to play music on toggle click.");
+                isMusicPlaying = false; // Đảm bảo cờ được đặt đúng nếu không phát được
+            });
+        }
+        updateMusicToggleButton();
+    });
+
+    function updateStreakDisplay() {
+      streakDisplay.textContent = streak > 0 ? `🔥 Chuỗi đúng: ${streak}` : '❄️ Chuỗi bị ngắt';
+      streakDisplay.classList.add('animate');
+      setTimeout(()=> streakDisplay.classList.remove('animate'), 700);
+    }
+
+    function fadeTransition(callback) {
+      container.classList.remove('fade-in');
+      container.classList.add('fade-out');
+      setTimeout(() => {
+        callback();
+        container.classList.remove('fade-out');
+        container.classList.add('fade-in');
+      }, 400);
+    }
+
+    function loadQuestion() {
+      const q = QUESTIONS[current];
+      questionText.textContent = `Câu ${current+1}/${QUESTIONS.length}: ${q.q}`;
+      optionsList.innerHTML = '';
+      resultDiv.textContent = '';
+      nextBtn.style.display = 'none';
+      updateStreakDisplay();
+
+      q.opts.forEach((opt, i) => {
+        const li = document.createElement('li');
+        li.innerHTML = `<label class='option'><input type='radio' name='option' value='${i}'>${opt}</label>`;
+        optionsList.appendChild(li);
+      });
+
+      const radios = optionsList.querySelectorAll('input[type=radio]');
+      radios.forEach(r => r.addEventListener('change', () => checkAnswer(Number(r.value))));
+    }
+
+    function checkAnswer(selected) {
+      // ➔ Bắt đầu phát nhạc nền ngay khi người dùng chọn đáp án đầu tiên
+      initializeMusic(); 
+      
+      const correct = QUESTIONS[current].a;
+      const labels = optionsList.querySelectorAll('label.option');
+
+      if (selected === correct) {
+        labels[selected].classList.add('correct');
+        soundCorrect.play();
+        score++; streak++; maxStreak = Math.max(maxStreak, streak);
+        resultDiv.textContent = '✅ Chính xác!';
+      } else {
+        labels[selected].classList.add('wrong');
+        labels[correct].classList.add('correct');
+        soundWrong.play();
+        resultDiv.textContent = `❌ Sai rồi! Đáp án đúng là: ${QUESTIONS[current].opts[correct]}`;
+        streak = 0;
+        container.classList.add('shake');
+        setTimeout(() => container.classList.remove('shake'), 400);
+      }
+
+      updateStreakDisplay();
+      nextBtn.style.display = 'inline-block';
+      optionsList.querySelectorAll('input').forEach(inp => inp.disabled = true);
+    }
+
+    nextBtn.addEventListener('click', () => {
+      fadeTransition(() => {
+        current++;
+        if (current < QUESTIONS.length) {
+          loadQuestion();
+        } else {
+          showFinal();
+        }
+      });
+    });
+
+    function showFinal() {
+      backgroundMusic.pause();
+      isMusicPlaying = false; // Cập nhật trạng thái khi nhạc dừng
+      updateMusicToggleButton(); // Cập nhật biểu tượng
+      soundFinish.play();
+      confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 } });
+      container.innerHTML = `<h2 style='font-size:32px; animation: glowText 1.5s infinite;'>🎉 Hoàn thành!</h2><p style='font-size:22px;'>Bạn đúng ${score}/${QUESTIONS.length} câu.</p><p style='font-size:22px;'>🔥 Chuỗi đúng cao nhất: ${maxStreak}</p><button class='btn' onclick='restartQuiz()'>Làm lại</button>`;
+    }
+
+    function restartQuiz() {
+      fadeTransition(() => {
+        current = 0; score = 0; streak = 0; maxStreak = 0;
+        container.innerHTML = `<div class='streak' id='streak-display'>🔥 Chuỗi đúng: 0</div><h2 id='question-text' style='font-size:26px;'></h2><ul class='options' id='options-list'></ul><button class='btn' id='next-btn' style='display:none;'>Câu tiếp theo ➜</button><div id='result' class='score'></div>`;
+        document.getElementById('next-btn').addEventListener('click', () => {
+          fadeTransition(() => {
+            current++;
+            if(current < QUESTIONS.length) loadQuestion(); else showFinal();
+          });
+        });
+        // Khi làm lại, kiểm tra nếu nhạc đang bật thì tiếp tục phát
+        if (isMusicPlaying) { 
+            backgroundMusic.play().catch(e => console.log('Music play resumed.'));
+        }
+        loadQuestion();
+      });
+    }
+
+    loadQuestion();
+    updateMusicToggleButton(); // Cập nhật biểu tượng loa ban đầu
+  </script>
+</body>
+</html>
